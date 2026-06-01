@@ -59,15 +59,6 @@ Built with the native [Web Gamepad API](https://developer.mozilla.org/en-US/docs
 
 ## 🚀 How to use
 
-```bash
-# Option 1 — just open it
-double-click index.html
-
-# Option 2 — serve locally
-npx serve .
-# or
-python3 -m http.server 8080
-```
 
 Then:
 1. Connect your controller via **USB or Bluetooth**
