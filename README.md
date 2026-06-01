@@ -10,16 +10,8 @@
          V I B R A T I O N   C O N T R O L
 ```
 
-**Test & control your gamepad rumble — right in the browser. No install. No BS.**
+**Test & control your gamepad vibration — right in the browser. No install.**
 
-[![Made with HTML](https://img.shields.io/badge/Made%20with-HTML%2FJS-16a316?style=flat-square&logo=html5&logoColor=white)](.)
-[![No Install](https://img.shields.io/badge/No%20Install-Just%20Open-9bf02a?style=flat-square)](.)
-[![Works Offline](https://img.shields.io/badge/Works-Offline-16a316?style=flat-square)](.)
-[![License](https://img.shields.io/badge/License-Free%20to%20use-555566?style=flat-square)](.)
-
-</div>
-
----
 
 ## ⚡ What is this?
 
@@ -83,33 +75,7 @@ Then:
 3. Hit the **toggle switch** on the page
 4. Adjust the sliders → feel the rumble 🎮
 
----
 
-## 🌐 Deploy in 2 minutes (free)
-
-**Netlify Drop:**
-1. Go to [app.netlify.com/drop](https://app.netlify.com/drop)
-2. Drag & drop the `index.html`
-3. Done — live URL instantly, no account needed
-
-**GitHub Pages:**
-1. Push this repo
-2. Settings → Pages → Branch: `main`
-3. Live at `yourusername.github.io/repo-name`
-
----
-
-## 🛠️ Tech
-
-| Thing | Detail |
-|---|---|
-| Language | Vanilla HTML + CSS + JS |
-| API | [Web Gamepad API](https://w3c.github.io/gamepad/) |
-| Vibration | `vibrationActuator.playEffect('dual-rumble', {...})` |
-| Dependencies | None |
-| File size | ~15kb |
-
----
 
 ## ☕ Support
 
@@ -127,7 +93,7 @@ If this saved you time or your controller test went well —
 
 ## 📄 License
 
-Free to use, share, and modify. Just don't claim it as your own. Be cool. 🤝
+Just don't claim it as your own. Be cool. 🤝
 
 ---
 
