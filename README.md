@@ -15,7 +15,7 @@
 
 ## ⚡ What is this?
 
-A single-file browser tool to **test and control gamepad vibration** — no backend, no framework, no nonsense. Just open the HTML and your controller starts rumbling.
+A single-file browser tool to **test and control gamepad vibration** 
 
 Built with the native [Web Gamepad API](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API). Works completely offline once loaded.
 
