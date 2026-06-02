@@ -11,6 +11,7 @@
 ```
 
 **Test & control your gamepad vibration — right in the browser. No install.**
+**Please go on arschpirat.github.io/Controller-Vibrate**
 
 
 ## ⚡ What is this?
