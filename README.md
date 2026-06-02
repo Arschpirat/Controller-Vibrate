@@ -77,7 +77,7 @@ If this saved you time or your controller test went well —
 
 ### [❤️ Buy me a coffee](https://www.paypal.com/pools/c/9pGxHqO0ke)
 
-*Even €1 makes my day. No pressure, no ads, just vibes (and vibrations).* 🎮
+*Even €1 makes my day. No pressure, no ads.* 🎮
 
 </div>
 
@@ -90,5 +90,5 @@ Just don't claim it as your own. Be cool. 🤝
 ---
 
 <div align="center">
-<sub>made with 🎮 + ☕ — works best with a controller in hand</sub>
+<sub> 🫰🏼
 </div>
