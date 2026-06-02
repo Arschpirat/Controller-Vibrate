@@ -12,7 +12,7 @@
 
 **Test & control your gamepad vibration — right in the browser. No install.**
 
-##Please visit https://arschpirat.github.io/Controller-Vibrate
+## ➡️ Please visit https://arschpirat.github.io/Controller-Vibrate
 
 ## ⚡ What is this?
 
