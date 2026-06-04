@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#107c10">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gamepad Vibration Tester & Controller Rumble Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --panel: #111118;
+    --border: #1e1e2e;
+    --green: #107c10;
+    --green-bright: #16a316;
+    --green-glow: #1db31d;
+    --white: #f0f0f0;
+    --muted: #555566;
+    --accent: #9bf02a;
+    --off: #2a2a3a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 20%, rgba(16,124,16,0.08) 0%, transparent 70%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    width: min(520px, 95vw);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  header {
+    text-align: center;
+  }
+
+  header .logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    color: var(--white);
+    text-transform: uppercase;
+  }
+
+  header .logo span {
+    color: var(--green-bright);
+  }
+
+  header .sub {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.3em;
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px 28px;
+    position: relative;
+  }
+
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: 0.4;
+  }
+
+  /* STATUS / TOGGLE */
+  .status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .status-info .label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .status-info .value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--muted);
+    transition: color 0.3s;
+  }
+
+  .status-info .value.active {
+    color: var(--accent);
+    text-shadow: 0 0 12px var(--accent);
+  }
+
+  /* Toggle switch */
+  .toggle-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .toggle-wrap .t-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .toggle {
+    width: 72px;
+    height: 36px;
+    background: var(--off);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+    outline: none;
+  }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 26px;
+    height: 26px;
+    background: var(--muted);
+    border-radius: 1px;
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1), background 0.3s;
+  }
+
+  .toggle.on {
+    background: rgba(16,124,16,0.3);
+    border-color: var(--green-bright);
+    box-shadow: 0 0 16px rgba(22,163,22,0.4), inset 0 0 8px rgba(22,163,22,0.1);
+  }
+
+  .toggle.on::after {
+    transform: translateX(36px);
+    background: var(--green-bright);
+    box-shadow: 0 0 8px var(--green-glow);
+  }
+
+  /* Controller indicator */
+  .controller-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+
+  .dot.connected {
+    background: var(--green-bright);
+    box-shadow: 0 0 8px var(--green-glow);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .controller-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* SLIDERS */
+  .sliders {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .slider-block .s-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .slider-block .s-name {
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .slider-block .s-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--white);
+    min-width: 3ch;
+    text-align: right;
+  }
+
+  .slider-track {
+    position: relative;
+    height: 6px;
+    background: var(--off);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .slider-fill {
+    position: absolute;
+    top: -1px; left: -1px; bottom: -1px;
+    background: var(--green);
+    border-radius: 0;
+    transition: width 0.05s, background 0.3s;
+    pointer-events: none;
+  }
+
+  .slider-fill.active {
+    background: var(--green-bright);
+    box-shadow: 0 0 10px rgba(22,163,22,0.6);
+  }
+
+  input[type=range] {
+    position: absolute;
+    inset: -8px -1px;
+    width: calc(100% + 2px);
+    opacity: 0;
+    cursor: pointer;
+    height: 22px;
+    margin: 0;
+  }
+
+  /* VISUALIZER */
+  .viz {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 3px;
+    height: 48px;
+    padding: 4px 0;
+  }
+
+  .viz-bar {
+    width: 6px;
+    background: var(--border);
+    border-radius: 1px;
+    transition: height 0.1s, background 0.2s;
+    min-height: 4px;
+  }
+
+  .viz-bar.active {
+    background: var(--green-bright);
+    box-shadow: 0 0 4px var(--green-glow);
+  }
+
+  /* PRESET BUTTONS */
+  .presets {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .preset-btn {
+    background: var(--off);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 6px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .preset-btn:hover {
+    border-color: var(--green-bright);
+    color: var(--white);
+    background: rgba(16,124,16,0.15);
+  }
+
+  .preset-btn.active-preset {
+    border-color: var(--green-bright);
+    color: var(--accent);
+    background: rgba(16,124,16,0.2);
+    box-shadow: 0 0 8px rgba(22,163,22,0.3);
+  }
+
+  /* Inline notice inside status panel */
+  .inline-notice {
+    display: none;
+    margin-top: 10px;
+    font-size: 0.63rem;
+    color: rgba(255,200,80,0.8);
+    letter-spacing: 0.05em;
+    line-height: 1.6;
+    border-left: 2px solid rgba(255,180,0,0.4);
+    padding-left: 8px;
+  }
+
+  .inline-notice.show { display: block; }
+
+  /* Left side donate block */
+  .donate-side {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,180,0,0.08);
+    border: 1px solid rgba(255,180,0,0.25);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    color: rgba(255,210,80,0.85);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 20px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    transition: all 0.2s;
+    line-height: 1.5;
+    text-align: center;
+    width: 80px;
+  }
+
+  .donate-side:hover {
+    background: rgba(255,180,0,0.18);
+    border-color: rgba(255,210,80,0.5);
+    color: #ffd966;
+    padding-left: 20px;
+  }
+
+  .donate-side-icon { font-size: 1.5rem; }
+  .donate-side-label { font-size: 0.6rem; color: rgba(255,210,80,0.5); letter-spacing: 0.05em; }
+  .donate-side-text { font-size: 0.6rem; opacity: 0.75; line-height: 1.6; }
+  .donate-side-heart { font-size: 0.7rem; color: rgba(255,120,120,0.9); margin-top: 2px; }
+
+
+
+  /* Rumble animation on body */
+  @keyframes rumble {
+    0%, 100% { transform: translate(0, 0); }
+    33%       { transform: translate(0.4px, -0.4px); }
+    66%       { transform: translate(-0.4px, 0.4px); }
+  }
+
+  body.rumbling .container {
+    animation: rumble 0.12s infinite;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo">Gamepad <span>Rumble</span> Control</div>
+    <div class="sub">Vibration Tester &amp; Manager</div>
+  </header>
+
+  <!-- Controller Status -->
+  <div class="panel">
+    <div class="status-row">
+      <div>
+        <div class="status-info">
+          <div class="label">Status</div>
+          <div class="value" id="statusText">OFFLINE</div>
+        </div>
+        <div class="controller-row" style="margin-top:10px">
+          <div class="dot" id="dot"></div>
+          <div class="controller-label" id="ctrlLabel">No controller detected</div>
+        </div>
+        <div class="inline-notice" id="notice">⚠ Connect a controller via USB or Bluetooth and press any button.</div>
+      </div>
+      <div class="toggle-wrap">
+        <div class="t-label">Vibration</div>
+        <div class="toggle" id="toggle" role="switch" aria-checked="false" tabindex="0" title="Toggle vibration"></div>
+        <div class="t-label" id="toggleLabel" style="color: var(--muted)">OFF</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sliders -->
+  <div class="panel">
+    <div class="sliders">
+      <div class="slider-block">
+        <div class="s-head">
+          <div class="s-name">Left Motor (Low Freq)</div>
+          <div class="s-val" id="leftVal">0%</div>
+        </div>
+        <div class="slider-track" id="leftTrack">
+          <div class="slider-fill" id="leftFill" style="width:0%"></div>
+          <input type="range" id="leftSlider" min="0" max="100" value="0">
+        </div>
+      </div>
+      <div class="slider-block">
+        <div class="s-head">
+          <div class="s-name">Right Motor (High Freq)</div>
+          <div class="s-val" id="rightVal">0%</div>
+        </div>
+        <div class="slider-track" id="rightTrack">
+          <div class="slider-fill" id="rightFill" style="width:0%"></div>
+          <input type="range" id="rightSlider" min="0" max="100" value="0">
+        </div>
+      </div>
+
+      <!-- Visualizer -->
+      <div class="viz" id="viz"></div>
+    </div>
+  </div>
+
+  <!-- Presets -->
+  <div class="panel">
+    <div style="font-size:0.65rem;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:12px;">Quick Select</div>
+    <div class="presets" id="presets">
+      <button class="preset-btn" data-l="20" data-r="20">Soft</button>
+      <button class="preset-btn" data-l="50" data-r="50">Medium</button>
+      <button class="preset-btn" data-l="100" data-r="100">Strong</button>
+      <button class="preset-btn" data-l="80" data-r="20">Left</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Left side donate block -->
+<a class="donate-side" href="https://www.paypal.com/pools/c/9pGxHqO0ke" target="_blank" rel="noopener">
+  <span class="donate-side-icon">☕</span>
+  <span class="donate-side-label">Free Tool</span>
+  <span class="donate-side-text">If it helped,<br>buy me a coffee!</span>
+  <span class="donate-side-heart">❤ Support</span>
+</a>
+
+<script>
+var _0xa043ba=["toggle", "toggleLabel", "statusText", "dot", "ctrlLabel", "leftSlider", "rightSlider", "leftVal", "rightVal", "leftFill", "rightFill", "notice", "viz", "div", "viz-bar", "px", " active", "", "gamepadconnected", "connected", "READY", "var(--white)", "show", "gamepaddisconnected", "No controller detected", "OFFLINE", "dual-rumble", "on", "aria-checked", "true", "ON", "var(--green-bright)", "ACTIVE", "active", "rumbling", "false", "OFF", "click", "keydown", " ", "Enter", "input", "%", ".preset-btn", "active-preset"];
+function _0xe16038(i){return _0xa043ba[i];}
+(function(){document.addEventListener('contextmenu',function(e){e.preventDefault();});document.addEventListener('keydown',function(e){if(e.keyCode===123||(e.ctrlKey&&e.shiftKey&&(e.keyCode===73||e.keyCode===74||e.keyCode===67))||(e.ctrlKey&&e.keyCode===85)){e.preventDefault();return false;}});})();
+const _0xdc30 = document.getElementById(_0xe16038(0));
+  const _0x543f = document.getElementById(_0xe16038(1));
+  const _0xe5a6 = document.getElementById(_0xe16038(2));
+  const _0xe743 = document.getElementById(_0xe16038(3));
+  const _0x849e = document.getElementById(_0xe16038(4));
+  const _0x63f8 = document.getElementById(_0xe16038(5));
+  const _0x101a = document.getElementById(_0xe16038(6));
+  const _0xc616 = document.getElementById(_0xe16038(7));
+  const _0xf8fd = document.getElementById(_0xe16038(8));
+  const _0x0ba8 = document.getElementById(_0xe16038(9));
+  const _0x4a16 = document.getElementById(_0xe16038(10));
+  const _0x7fe4 = document.getElementById(_0xe16038(11));
+  const _0x82ed = document.getElementById(_0xe16038(12));
+  let _0x03a8 = false;
+  let _0x39c0 = null;
+  const _0xcb52 = 32;
+  const _0xf511 = [];
+  for (let i = 0; i < _0xcb52; i++) {
+    const _0x638b = document.createElement(_0xe16038(13));
+    _0x638b.className = _0xe16038(14);
+    _0x82ed.appendChild(_0x638b);
+    _0xf511.push(_0x638b);
+  }
+  function _0xd9cb() {
+    const _0x34fa = parseInt(_0x63f8.value) / 100;
+    const _0x7813 = parseInt(_0x101a.value) / 100;
+    _0xf511.forEach((_0x638b, i) => {
+      const _0x5933 = i / (_0xcb52 - 1);
+      const _0xef17 = _0x34fa * (1 - _0x5933) + _0x7813 * _0x5933;
+      const active = _0x03a8 && (_0x34fa > 0 || _0x7813 > 0);
+      const _0x1cc2 = active ? (Math.random() * 0.3 * _0xef17) : 0;
+      const _0x1a3e = Math.max(4, Math.floor((_0xef17 + _0x1cc2) * 44));
+      _0x638b.style.height = _0x1a3e + _0xe16038(15);
+      _0x638b.className = _0xe16038(14) + (active && _0xef17 > 0.01 ? _0xe16038(16) : _0xe16038(17));
+    });
+  }
+  window.addEventListener(_0xe16038(18), (e) => {
+    _0x39c0 = e.gamepad.index;
+    _0xe743.classList.add(_0xe16038(19));
+    _0x849e.textContent = e.gamepad.id.substring(0, 40);
+    _0xe5a6.textContent = _0xe16038(20);
+    _0xe5a6.style.color = _0xe16038(21);
+    _0x7fe4.classList.remove(_0xe16038(22));
+  });
+  window.addEventListener(_0xe16038(23), (e) => {
+    if (e.gamepad.index === _0x39c0) {
+      _0x39c0 = null;
+      _0xe743.classList.remove(_0xe16038(19));
+      _0x849e.textContent = _0xe16038(24);
+      _0xe5a6.textContent = _0xe16038(25);
+      _0xe5a6.style.color = _0xe16038(17);
+      _0x2b26();
+    }
+  });
+  function _0x8f68() {
+    const _0xed40 = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (let _0x32e9 of _0xed40) {
+      if (_0x32e9) {
+        _0x39c0 = _0x32e9.index;
+        _0xe743.classList.add(_0xe16038(19));
+        _0x849e.textContent = _0x32e9.id.substring(0, 40);
+        _0xe5a6.textContent = _0xe16038(20);
+        _0xe5a6.style.color = _0xe16038(21);
+        _0x7fe4.classList.remove(_0xe16038(22));
+        break;
+      }
+    }
+  }
+  _0x8f68();
+  async function _0xd9d9() {
+    if (_0x39c0 === null) return;
+    const _0xed40 = navigator.getGamepads ? navigator.getGamepads() : [];
+    const _0x050e = _0xed40[_0x39c0];
+    if (!_0x050e) return;
+    const _0x4a92 = parseInt(_0x63f8.value) / 100;
+    const _0xc8c8 = parseInt(_0x101a.value) / 100;
+    if (_0x050e.vibrationActuator) {
+      try {
+        await _0x050e.vibrationActuator.playEffect(_0xe16038(26), {
+          startDelay: 0,
+          duration: 200,
+          weakMagnitude: _0xc8c8,
+          strongMagnitude: _0x4a92,
+        });
+      } catch(e) {}
+    }
+  }
+  let _0xb034 = null;
+  function _0x1314() {
+    if (_0xb034) return;
+    _0xb034 = setInterval(_0xd9d9, 150);
+    _0xd9d9();
+  }
+  function _0xa553() {
+    clearInterval(_0xb034);
+    _0xb034 = null;
+    if (_0x39c0 !== null) {
+      const _0xed40 = navigator.getGamepads ? navigator.getGamepads() : [];
+      const _0x050e = _0xed40[_0x39c0];
+      if (_0x050e && _0x050e.vibrationActuator) {
+        try {
+          _0x050e.vibrationActuator.playEffect(_0xe16038(26), {
+            startDelay: 0, duration: 0, weakMagnitude: 0, strongMagnitude: 0
+          });
+        } catch(e) {}
+      }
+    }
+  }
+  function _0x4ea9() {
+    if (_0x39c0 === null) {
+      _0x7fe4.classList.add(_0xe16038(22));
+      return;
+    }
+    _0x03a8 = true;
+    _0xdc30.classList.add(_0xe16038(27));
+    _0xdc30.setAttribute(_0xe16038(28), _0xe16038(29));
+    _0x543f.textContent = _0xe16038(30);
+    _0x543f.style.color = _0xe16038(31);
+    _0xe5a6.textContent = _0xe16038(32);
+    _0xe5a6.classList.add(_0xe16038(33));
+    document.body.classList.add(_0xe16038(34));
+    _0x1314();
+    _0xfa8a(true);
+  }
+  function _0x2b26() {
+    _0x03a8 = false;
+    _0xdc30.classList.remove(_0xe16038(27));
+    _0xdc30.setAttribute(_0xe16038(28), _0xe16038(35));
+    _0x543f.textContent = _0xe16038(36);
+    _0x543f.style.color = _0xe16038(17);
+    if (_0x39c0 !== null) {
+      _0xe5a6.textContent = _0xe16038(20);
+      _0xe5a6.classList.remove(_0xe16038(33));
+    }
+    document.body.classList.remove(_0xe16038(34));
+    _0xa553();
+    _0xfa8a(false);
+  }
+  function _0xfa8a(active) {
+    _0x0ba8.classList._0xdc30(_0xe16038(33), active);
+    _0x4a16.classList._0xdc30(_0xe16038(33), active);
+  }
+  _0xdc30.addEventListener(_0xe16038(37), () => _0x03a8 ? _0x2b26() : _0x4ea9());
+  _0xdc30.addEventListener(_0xe16038(38), e => { if (e.key === _0xe16038(39) || e.key === _0xe16038(40)) { e.preventDefault(); _0x03a8 ? _0x2b26() : _0x4ea9(); }});
+  _0x63f8.addEventListener(_0xe16038(41), () => {
+    const _0xd13a = _0x63f8.value;
+    _0xc616.textContent = _0xd13a + _0xe16038(42);
+    _0x0ba8.style.width = _0xd13a + _0xe16038(42);
+    if (_0x03a8) _0xd9d9();
+  });
+  _0x101a.addEventListener(_0xe16038(41), () => {
+    const _0xd13a = _0x101a.value;
+    _0xf8fd.textContent = _0xd13a + _0xe16038(42);
+    _0x4a16.style.width = _0xd13a + _0xe16038(42);
+    if (_0x03a8) _0xd9d9();
+  });
+  document.querySelectorAll(_0xe16038(43)).forEach(_0x784d => {
+    _0x784d.addEventListener(_0xe16038(37), () => {
+      const _0x34fa = _0x784d.dataset._0x34fa;
+      const _0x7813 = _0x784d.dataset._0x7813;
+      _0x63f8.value = _0x34fa;
+      _0x101a.value = _0x7813;
+      _0xc616.textContent = _0x34fa + _0xe16038(42);
+      _0xf8fd.textContent = _0x7813 + _0xe16038(42);
+      _0x0ba8.style.width = _0x34fa + _0xe16038(42);
+      _0x4a16.style.width = _0x7813 + _0xe16038(42);
+      document.querySelectorAll(_0xe16038(43)).forEach(_0x638b => _0x638b.classList.remove(_0xe16038(44)));
+      _0x784d.classList.add(_0xe16038(44));
+      if (_0x03a8) _0xd9d9();
+    });
+  });
+  setInterval(_0xd9cb, 80);
+</script>
+</body>
+</html>
