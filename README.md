@@ -75,7 +75,7 @@ If this saved you time or your controller test went well —
 
 <div align="center">
 
-### [❤️ Buy me a coffee](https://www.paypal.com/pools/c/9pGxHqO0ke)
+### [❤️ Message me](https://www.instagram.com/mr.4rondon?utm_source=ig_web_button_share_sheet&stkn=ZDNlZDc0MzIxNw==)
 
 *Even €1 makes my day. No pressure, no ads.* 🎮
 
